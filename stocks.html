@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock History | MyShop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#F8F9FA]">
+    <div class="bg-[#6236FF] p-10 text-white sticky top-0 z-50 shadow-lg rounded-none">
+        <div class="flex items-center relative">
+            <a href="index.html" class="bg-white/20 p-3 rounded-2xl hover:bg-white/30 transition-all active:scale-90 flex items-center justify-center absolute left-0">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                    <path d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </a>
+            
+            <div class="w-full text-center">
+                <h1 class="text-3xl font-bold">Stock History</h1>
+                <p class="text-sm opacity-80">Monitor your inventory additions</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="p-6 max-w-2xl mx-auto">
+        <div class="bg-white p-5 rounded-3xl shadow-sm mb-6 border border-gray-100">
+            <p class="text-[11px] uppercase font-bold text-gray-400 mb-3 ml-1">Filter by Period</p>
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="flex-1 min-w-[140px]">
+                    <label class="block text-[10px] text-gray-500 mb-1 ml-2">From</label>
+                    <input type="date" id="date-from" onchange="renderStock()" 
+                        class="w-full bg-gray-50 border-none rounded-2xl p-3 text-sm focus:ring-2 focus:ring-[#6236FF] outline-none">
+                </div>
+                <div class="flex-1 min-w-[140px]">
+                    <label class="block text-[10px] text-gray-500 mb-1 ml-2">To</label>
+                    <input type="date" id="date-to" onchange="renderStock()" 
+                        class="w-full bg-gray-50 border-none rounded-2xl p-3 text-sm focus:ring-2 focus:ring-[#6236FF] outline-none">
+                </div>
+                <button onclick="clearFilter()" class="h-[45px] mt-5 text-sm font-semibold text-[#6236FF] px-4 py-2 hover:bg-purple-50 rounded-xl transition">
+                    Show All
+                </button>
+            </div>
+        </div>
+
+        <div id="stock-list" class="space-y-4">
+            <p class="text-center text-gray-500 py-10">Loading stock...</p>
+        </div>
+
+        <div class="h-20"></div>
+    </div>
+
+    <script>
+        function renderStock() {
+            const stockList = document.getElementById('stock-list');
+            const dateFrom = document.getElementById('date-from').value;
+            const dateTo = document.getElementById('date-to').value;
+            
+            const allTransactions = JSON.parse(localStorage.getItem('myShop_transactions')) || [];
+            
+            // 1. Chuja 'stock' pekee
+            let filteredData = allTransactions.filter(t => t.type === 'stock');
+
+            // 2. Chuja kwa kipindi (From - To)
+            if (dateFrom || dateTo) {
+                filteredData = filteredData.filter(t => {
+                    const tDate = new Date(t.timestamp || new Date(t.date));
+                    tDate.setHours(0, 0, 0, 0);
+
+                    if (dateFrom && dateTo) {
+                        const start = new Date(dateFrom);
+                        const end = new Date(dateTo);
+                        return tDate >= start && tDate <= end;
+                    } else if (dateFrom) {
+                        return tDate >= new Date(dateFrom);
+                    } else if (dateTo) {
+                        return tDate <= new Date(dateTo);
+                    }
+                    return true;
+                });
+            }
+
+            filteredData.reverse();
+
+            if (filteredData.length === 0) {
+                stockList.innerHTML = `
+                    <div class="bg-white p-10 rounded-3xl shadow-sm text-center">
+                        <p class="text-gray-400">No stock records found for this period.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            stockList.innerHTML = '';
+
+            filteredData.forEach((stock) => {
+                const originalIndex = allTransactions.findIndex(t => t === stock);
+                
+                stockList.innerHTML += `
+                    <div class="bg-white p-5 rounded-3xl shadow-sm flex justify-between items-center border border-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        <div>
+                            <h3 class="font-bold text-gray-800">${stock.title}</h3>
+                            <p class="text-xs text-gray-400">${stock.date} • STOCK</p>
+                            <p class="text-sm font-bold text-orange-500 mt-1">TZS ${parseFloat(stock.amount).toLocaleString()}</p>
+                        </div>
+                        <button onclick="deleteStock(${originalIndex})" class="bg-red-50 text-red-500 p-3 rounded-2xl hover:bg-red-500 hover:text-white transition">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M3 6h18m-2 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        function clearFilter() {
+            document.getElementById('date-from').value = '';
+            document.getElementById('date-to').value = '';
+            renderStock();
+        }
+
+        function deleteStock(index) {
+            if (confirm("Are you sure?")) {
+                let allTransactions = JSON.parse(localStorage.getItem('myShop_transactions')) || [];
+                allTransactions.splice(index, 1);
+                localStorage.setItem('myShop_transactions', JSON.stringify(allTransactions));
+                renderStock();
+            }
+        }
+
+        window.onload = renderStock;
+    </script>
+</body>
+</html>

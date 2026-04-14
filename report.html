@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics | MyShop</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: #F4F7FE; 
+            color: #1A1A1A; 
+            line-height: 1.6; 
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .header { 
+            background-color: #6236FF; 
+            padding: 35px 20px; 
+            color: white; 
+            text-align: center; 
+            position: sticky; 
+            top: 0; 
+            z-index: 50; 
+            box-shadow: 0 8px 30px rgba(98, 54, 255, 0.18); 
+        }
+        
+        .header-content { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+        }
+        
+        .back-btn { 
+            background: rgba(255, 255, 255, 0.2); 
+            padding: 12px; 
+            border-radius: 14px; 
+            color: white; 
+            text-decoration: none; 
+            display: flex; 
+            align-items: center; 
+            transition: 0.2s;
+        }
+
+        .header h1 { 
+            font-size: 32px; 
+            font-weight: 800; 
+            letter-spacing: -1px; 
+            line-height: 1.1;
+        }
+        
+        .status { 
+            font-size: 13px; 
+            text-transform: uppercase; 
+            font-weight: 700; 
+            opacity: 0.9; 
+            letter-spacing: 2px; 
+            margin-top: 6px; 
+        }
+        
+        .container { max-width: 600px; margin: 30px auto 0; padding: 0 20px 100px; }
+
+        .card { 
+            background: white; 
+            border-radius: 24px; 
+            padding: 25px; 
+            margin-bottom: 20px; 
+            border: 1px solid rgba(255, 255, 255, 1); 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03); 
+        }
+        
+        .card-title { 
+            font-size: 11px; 
+            text-transform: uppercase; 
+            font-weight: 700; 
+            color: #6236FF; 
+            margin-bottom: 15px; 
+            letter-spacing: 1.2px; 
+        }
+
+        .quick-select { 
+            display: flex; 
+            gap: 10px; 
+            overflow-x: auto; 
+            padding-bottom: 15px; 
+            margin-bottom: 15px; 
+            border-bottom: 1px solid #F0F0F0; 
+        }
+        
+        .btn-filter { 
+            background: #F0EDFF; 
+            border: none; 
+            padding: 10px 18px; 
+            border-radius: 12px; 
+            font-size: 12px; 
+            font-weight: 600; 
+            color: #6236FF; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            white-space: nowrap; 
+            font-family: inherit;
+        }
+        
+        .btn-filter:hover { background: #6236FF; color: white; }
+        
+        .date-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+        .input-group label { 
+            display: block; 
+            font-size: 10px; 
+            font-weight: 700; 
+            color: #A0A0A0; 
+            text-transform: uppercase; 
+            margin-bottom: 6px; 
+            margin-left: 4px; 
+        }
+        
+        input[type="date"] { 
+            width: 100%; 
+            background: #F8F9FA; 
+            border: 1px solid transparent; 
+            padding: 12px; 
+            border-radius: 12px; 
+            font-family: inherit; 
+            font-weight: 600; 
+            font-size: 13px; 
+            color: #1A1A1A; 
+            outline: none;
+            transition: 0.2s;
+        }
+        
+        input[type="date"]:focus { border-color: #6236FF; background: white; }
+
+        .net-profit-label { font-size: 11px; text-transform: uppercase; font-weight: 700; color: #A0A0A0; letter-spacing: 1px; }
+        .net-profit-val { font-size: 32px; font-weight: 800; color: #1A1A1A; margin-top: 5px; letter-spacing: -1px; }
+        
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 15px; 
+            margin-top: 25px; 
+            padding-top: 20px; 
+            border-top: 1px solid #F0F0F0; 
+        }
+        
+        .stat-box { background: #F8F9FA; padding: 15px; border-radius: 16px; }
+        .stat-label { font-size: 10px; text-transform: uppercase; font-weight: 700; color: #A0A0A0; margin-bottom: 4px; }
+        .stat-val { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+        
+        .val-inc { color: #10B981; }
+        .val-exp { color: #EF4444; }
+
+        .action-area { text-align: center; padding-top: 10px; }
+        
+        .btn-primary { 
+            background: #1A1A1A; 
+            color: white; 
+            border: none; 
+            padding: 16px 30px; 
+            border-radius: 18px; 
+            font-weight: 600; 
+            font-size: 14px; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 12px; 
+            font-family: inherit;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
+        }
+        
+        .btn-primary:active { transform: scale(0.96); }
+        .icon-bg { background: #6236FF; padding: 6px; border-radius: 8px; display: flex; }
+        
+        .footer-note { 
+            font-size: 10px; 
+            font-weight: 700; 
+            color: #A0A0A0; 
+            text-transform: uppercase; 
+            margin-top: 18px; 
+            letter-spacing: 1px; 
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-content">
+            <a href="index.html" class="back-btn">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"></path></svg>
+            </a>
+            <div>
+                <h1>Financial Insights</h1>
+                <div class="status">Live Updates</div>
+            </div>
+            <div style="width: 48px;"></div> 
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-title">Select Period</div>
+            <div class="quick-select no-scrollbar">
+                <button class="btn-filter" onclick="setQuickDate('today')">Today</button>
+                <button class="btn-filter" onclick="setQuickDate('week')">This Week</button>
+                <button class="btn-filter" onclick="setQuickDate('month')">This Month</button>
+            </div>
+            <div class="date-grid">
+                <div class="input-group">
+                    <label>From Date</label>
+                    <input type="date" id="report-from" onchange="updatePreview()">
+                </div>
+                <div class="input-group">
+                    <label>To Date</label>
+                    <input type="date" id="report-to" onchange="updatePreview()">
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <p class="net-profit-label">Estimated Net Profit</p>
+            <h2 class="net-profit-val" id="p-net">TZS 0</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <p class="stat-label">Income</p>
+                    <div class="stat-val val-inc" id="p-income">TZS 0</div>
+                </div>
+                <div class="stat-box" style="text-align: right;">
+                    <p class="stat-label">Expenses</p>
+                    <div class="stat-val val-exp" id="p-expense">TZS 0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-area">
+            <button class="btn-primary" onclick="generatePDF()">
+                <div class="icon-bg">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                </div>
+                Generate PDF Report
+            </button>
+            <p class="footer-note">Secured Financial Document</p>
+        </div>
+    </div>
+
+    <script>
+        function setQuickDate(period) {
+            const today = new Date();
+            let fromDate = new Date();
+            if (period === 'today') fromDate = today;
+            else if (period === 'week') fromDate.setDate(today.getDate() - 7);
+            else if (period === 'month') fromDate.setMonth(today.getMonth() - 1);
+
+            document.getElementById('report-from').value = fromDate.toISOString().split('T')[0];
+            document.getElementById('report-to').value = today.toISOString().split('T')[0];
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const from = document.getElementById('report-from').value;
+            const to = document.getElementById('report-to').value;
+            let transactions = JSON.parse(localStorage.getItem('myShop_transactions')) || [];
+
+            if(from && to) {
+                transactions = transactions.filter(t => (t.fullDate || t.date) >= from && (t.fullDate || t.date) <= to);
+            }
+
+            let inc = 0, exp = 0;
+            transactions.forEach(t => {
+                const amt = parseFloat(t.amount) || 0;
+                if(t.type === 'sale') inc += amt;
+                else if(t.type === 'expense' || t.type === 'stock') exp += amt;
+            });
+
+            document.getElementById('p-income').innerText = `TZS ${inc.toLocaleString()}`;
+            document.getElementById('p-expense').innerText = `TZS ${exp.toLocaleString()}`;
+            document.getElementById('p-net').innerText = `TZS ${(inc - exp).toLocaleString()}`;
+        }
+
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = jsPDF();
+            const fromDate = document.getElementById('report-from').value;
+            const toDate = document.getElementById('report-to').value;
+            const shopName = localStorage.getItem('myShop_name') || "MyShop";
+            
+            let transactions = JSON.parse(localStorage.getItem('myShop_transactions')) || [];
+            if(fromDate && toDate) {
+                transactions = transactions.filter(t => (t.fullDate || t.date) >= fromDate && (t.fullDate || t.date) <= toDate);
+            }
+            
+            if(transactions.length === 0) return alert("No records found.");
+
+            let totalIn = 0, totalOut = 0;
+            const rows = transactions.map(t => {
+                const amt = parseFloat(t.amount) || 0;
+                if(t.type === 'sale') totalIn += amt; else totalOut += amt;
+                return [t.date, t.title, t.type.toUpperCase(), `TZS ${amt.toLocaleString()}`];
+            });
+
+            const pageWidth = doc.internal.pageSize.getWidth();
+            
+            // --- Header ---
+            doc.setFontSize(22);
+            doc.setTextColor(98, 54, 255); 
+            doc.setFont("helvetica", "bold");
+            doc.text(shopName.toUpperCase(), pageWidth / 2, 20, { align: 'center' });
+            
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.setFont("helvetica", "normal");
+            const periodText = `FINANCIAL STATEMENT REPORT | ${fromDate || 'START'} TO ${toDate || 'END'}`;
+            doc.text(periodText, pageWidth / 2, 28, { align: 'center' });
+
+            // Mstari wa urembo sasa upo CHINI ya maelezo yote ya header
+            doc.setDrawColor(98, 54, 255);
+            doc.setLineWidth(0.5);
+            doc.line(20, 32, pageWidth - 20, 32);
+
+            // --- Stats Area ---
+            const cardW = 60;
+            const startY = 42;
+            
+            doc.setDrawColor(16, 185, 129); // Kijani
+            doc.roundedRect(14, startY, cardW, 18, 2, 2, 'D');
+            doc.setTextColor(16, 185, 129);
+            doc.setFontSize(8); doc.text("TOTAL INCOME", 18, startY + 6);
+            doc.setFontSize(11); doc.text(`TZS ${totalIn.toLocaleString()}`, 18, startY + 13);
+
+            doc.setDrawColor(239, 68, 68); // Nyekundu
+            doc.roundedRect(14 + cardW + 3, startY, cardW, 18, 2, 2, 'D');
+            doc.setTextColor(239, 68, 68);
+            doc.setFontSize(8); doc.text("TOTAL EXPENSES", 14 + cardW + 7, startY + 6);
+            doc.setFontSize(11); doc.text(`TZS ${totalOut.toLocaleString()}`, 14 + cardW + 7, startY + 13);
+
+            doc.setDrawColor(98, 54, 255); // Blue
+            doc.roundedRect(14 + (cardW * 2) + 6, startY, cardW, 18, 2, 2, 'D');
+            doc.setTextColor(98, 54, 255);
+            doc.setFontSize(8); doc.text("NET PROFIT", 14 + (cardW * 2) + 10, startY + 6);
+            doc.setFontSize(11); doc.text(`TZS ${(totalIn - totalOut).toLocaleString()}`, 14 + (cardW * 2) + 10, startY + 13);
+
+            // --- Table Area ---
+            doc.autoTable({
+                startY: 68,
+                head: [['DATE', 'DESCRIPTION', 'TYPE', 'AMOUNT']],
+                body: rows,
+                theme: 'striped',
+                styles: { fontSize: 9, cellPadding: 4 },
+                headStyles: { 
+                    fillColor: [98, 54, 255], 
+                    textColor: [255, 255, 255], 
+                    halign: 'center',
+                    fontStyle: 'bold'
+                },
+                columnStyles: { 3: { halign: 'right', fontStyle: 'bold' } },
+                margin: { left: 14, right: 14 },
+                didDrawPage: function (data) {
+                    doc.setFontSize(8);
+                    doc.setTextColor(150);
+                    doc.text(`Generated on ${new Date().toLocaleString()}`, 14, doc.internal.pageSize.getHeight() - 10);
+                }
+            });
+
+            doc.save(`Report_${shopName}.pdf`);
+        }
+        
+        window.onload = updatePreview;
+    </script>
+</body>
+</html>
